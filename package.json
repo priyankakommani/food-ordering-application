@@ -1,0 +1,16 @@
+{
+  "name": "slooze-food-ordering",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "setup:backend": "cd backend && npm install && npm run setup",
+    "setup:frontend": "cd frontend && npm install",
+    "setup": "npm run setup:backend && npm run setup:frontend",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}

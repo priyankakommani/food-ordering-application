@@ -1,0 +1,131 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthResponse {
+  accessToken: String!
+  user: UserType!
+}
+
+enum Country {
+  AMERICA
+  INDIA
+}
+
+input CreatePaymentMethodInput {
+  isDefault: Boolean! = false
+  last4: String
+  type: String!
+  upiId: String
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type MenuItemType {
+  category: String!
+  description: String!
+  id: ID!
+  imageUrl: String
+  name: String!
+  price: Float!
+  restaurantId: String!
+}
+
+type Mutation {
+  addPaymentMethod(input: CreatePaymentMethodInput!, userId: String!): PaymentMethodType!
+  cancelOrder(orderId: ID!): OrderType!
+  createOrder(items: [OrderItemInput!]!, restaurantId: String!): OrderType!
+  deletePaymentMethod(id: ID!): PaymentMethodType!
+  login(email: String!, password: String!): AuthResponse!
+  placeOrder(orderId: ID!, paymentMethodId: String!): OrderType!
+  updatePaymentMethod(id: ID!, input: CreatePaymentMethodInput!): PaymentMethodType!
+}
+
+input OrderItemInput {
+  menuItemId: String!
+  quantity: Int!
+}
+
+type OrderItemType {
+  id: ID!
+  menuItem: OrderedMenuItemType!
+  menuItemId: String!
+  orderId: String!
+  price: Float!
+  quantity: Int!
+}
+
+enum OrderStatus {
+  CANCELLED
+  PENDING
+  PLACED
+}
+
+type OrderType {
+  country: Country!
+  createdAt: DateTime!
+  id: ID!
+  items: [OrderItemType!]!
+  restaurantId: String!
+  status: OrderStatus!
+  total: Float!
+  updatedAt: DateTime!
+  userId: String!
+}
+
+type OrderedMenuItemType {
+  category: String!
+  description: String!
+  id: ID!
+  imageUrl: String
+  name: String!
+}
+
+type PaymentMethodType {
+  id: ID!
+  isDefault: Boolean!
+  last4: String
+  type: String!
+  upiId: String
+  userId: String!
+}
+
+type Query {
+  allPaymentMethods: [PaymentMethodType!]!
+  me: UserType!
+  menuItem(id: ID!): MenuItemType
+  myOrders: [OrderType!]!
+  myPaymentMethods: [PaymentMethodType!]!
+  order(id: ID!): OrderType
+  orders: [OrderType!]!
+  restaurant(id: ID!): RestaurantType
+  restaurants: [RestaurantType!]!
+  users: [UserType!]!
+}
+
+type RestaurantType {
+  country: Country!
+  cuisine: String!
+  id: ID!
+  imageUrl: String
+  menuItems: [MenuItemType!]!
+  name: String!
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+type UserType {
+  country: Country!
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  name: String!
+  role: Role!
+}
