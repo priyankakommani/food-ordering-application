@@ -4,8 +4,17 @@ import { ApolloClient, InMemoryCache, createHttpLink, ApolloProvider } from '@ap
 import { setContext } from '@apollo/client/link/context';
 import { ReactNode } from 'react';
 
+function resolveGraphqlUri(): string {
+  const fallback = 'http://localhost:4000/graphql';
+  const raw = process.env.NEXT_PUBLIC_GRAPHQL_URL?.trim();
+  if (!raw) return fallback;
+
+  if (raw.endsWith('/graphql')) return raw;
+  return `${raw.replace(/\/+$/, '')}/graphql`;
+}
+
 const httpLink = createHttpLink({
-  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/graphql',
+  uri: resolveGraphqlUri(),
 });
 
 const authLink = setContext((_, { headers }) => {
