@@ -1,0 +1,174 @@
+{
+    "info": {
+        "_postman_id": "c7e8e9d0-1a2b-3c4d-5e6f-7g8h9i0j1k2l",
+        "name": "Slooze Food Ordering - GraphQL",
+        "description": "API collection for the Slooze Food Ordering SDE assignment. Includes Auth, Restaurants, Orders, and Payment methods.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation Login($email: String!, $password: String!) {\n  login(email: $email, password: $password) {\n    accessToken\n    user {\n      id\n      name\n      role\n      country\n    }\n  }\n}",
+                                "variables": "{\n  \"email\": \"nick@shield.com\",\n  \"password\": \"password123\"\n}"
+                            }
+                        },
+                        "url": {
+                            "raw": "http://localhost:4000/graphql",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "4000",
+                            "path": [
+                                "graphql"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Restaurants",
+            "item": [
+                {
+                    "name": "Get All Restaurants",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query GetRestaurants {\n  restaurants {\n    id\n    name\n    cuisine\n    country\n    menuItems {\n      id\n      name\n      price\n    }\n  }\n}",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "http://localhost:4000/graphql",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "4000",
+                            "path": [
+                                "graphql"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "Create Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation CreateOrder($restaurantId: String!, $items: [OrderItemInput!]!) {\n  createOrder(restaurantId: $restaurantId, items: $items) {\n    id\n    status\n    total\n  }\n}",
+                                "variables": "{\n  \"restaurantId\": \"rest-india-1\",\n  \"items\": [\n    {\n      \"menuItemId\": \"clou...\",\n      \"quantity\": 2\n    }\n  ]\n}"
+                            }
+                        },
+                        "url": {
+                            "raw": "http://localhost:4000/graphql",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "4000",
+                            "path": [
+                                "graphql"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Place Order (Pay)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation PlaceOrder($orderId: ID!, $paymentMethodId: String!) {\n  placeOrder(orderId: $orderId, paymentMethodId: $paymentMethodId) {\n    id\n    status\n  }\n}",
+                                "variables": "{\n  \"orderId\": \"...\",\n  \"paymentMethodId\": \"...\"\n}"
+                            }
+                        },
+                        "url": {
+                            "raw": "http://localhost:4000/graphql",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "4000",
+                            "path": [
+                                "graphql"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "token",
+            "value": "PASTE_JWT_HERE",
+            "type": "string"
+        }
+    ]
+}

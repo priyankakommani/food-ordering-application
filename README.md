@@ -217,8 +217,8 @@ It includes:
 - [x] Architecture & Design document ([ARCHITECTURE.md](./ARCHITECTURE.md))
 - [x] Seed dataset (`prisma/seed.ts`)
 - [x] API definitions via GraphQL schema (`backend/src/schema.gql`)
+- [x] API Collection ([postman_collection.json](./postman_collection.json))
 - [ ] Demo video or deployment link (to be added before final submission)
-- [ ] External API collection export file (optional)
 
 ## Troubleshooting
 
