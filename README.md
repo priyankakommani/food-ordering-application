@@ -49,6 +49,8 @@ Default password for all seeded users: `password123`
 
 ```text
 food-ordering/
+├── ARCHITECTURE.md
+├── README.md
 ├── backend/
 │   ├── prisma/
 │   │   ├── schema.prisma
@@ -211,11 +213,12 @@ It includes:
 ## Submission Checklist (as requested in assignment note)
 
 - [x] Source code repository (this monorepo)
-- [x] README with local setup and architecture summary
+- [x] README with local setup
+- [x] Architecture & Design document ([ARCHITECTURE.md](./ARCHITECTURE.md))
 - [x] Seed dataset (`prisma/seed.ts`)
-- [x] API definitions via GraphQL schema (`backend/src/schema.gql`) and operations above
+- [x] API definitions via GraphQL schema (`backend/src/schema.gql`)
 - [ ] Demo video or deployment link (to be added before final submission)
-- [ ] External API collection export file (optional: can export from GraphQL client/Postman)
+- [ ] External API collection export file (optional)
 
 ## Troubleshooting
 
