@@ -33,17 +33,50 @@ function loadEnvFromFile(): void {
 
 loadEnvFromFile();
 
+function normalizeOrigin(value: string): string {
+  return value.replace(/\/+$/, '');
+}
+
+function buildAllowedOrigins(): Set<string> {
+  const envValue = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const fromEnv = envValue
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .map(normalizeOrigin);
+
+  const defaults = ['http://localhost:3000', 'http://127.0.0.1:3000'].map(normalizeOrigin);
+  return new Set([...defaults, ...fromEnv]);
+}
+
 async function bootstrap() {
   const { AppModule } = await import('./app.module');
   const app = await NestFactory.create(AppModule);
-  
+
+  const allowedOrigins = buildAllowedOrigins();
+  const allowVercelPreview = (process.env.ALLOW_VERCEL_PREVIEW || 'false').toLowerCase() === 'true';
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
+    origin: (origin, callback) => {
+      // Allow non-browser clients and same-origin server calls.
+      if (!origin) return callback(null, true);
+
+      const normalizedOrigin = normalizeOrigin(origin);
+      if (allowedOrigins.has(normalizedOrigin)) {
+        return callback(null, true);
+      }
+
+      if (allowVercelPreview && /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(normalizedOrigin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+    },
   });
-  
+
   app.useGlobalPipes(new ValidationPipe());
-  
+
   const port = process.env.PORT || 4000;
   await app.listen(port);
   console.log(`🚀 Server running on http://localhost:${port}/graphql`);
