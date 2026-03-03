@@ -15,6 +15,9 @@ function resolveGraphqlUri(): string {
 
 const httpLink = createHttpLink({
   uri: resolveGraphqlUri(),
+  fetchOptions: {
+    credentials: 'include',
+  },
 });
 
 const authLink = setContext((_, { headers }) => {

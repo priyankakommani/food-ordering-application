@@ -34,7 +34,14 @@ function loadEnvFromFile(): void {
 loadEnvFromFile();
 
 function normalizeOrigin(value: string): string {
-  return value.replace(/\/+$/, '');
+  let normalized = value.trim();
+  if (
+    (normalized.startsWith('"') && normalized.endsWith('"')) ||
+    (normalized.startsWith("'") && normalized.endsWith("'"))
+  ) {
+    normalized = normalized.slice(1, -1);
+  }
+  return normalized.replace(/\/+$/, '');
 }
 
 function buildAllowedOrigins(): Set<string> {
@@ -45,8 +52,14 @@ function buildAllowedOrigins(): Set<string> {
     .filter(Boolean)
     .map(normalizeOrigin);
 
-  const defaults = ['http://localhost:3000', 'http://127.0.0.1:3000'].map(normalizeOrigin);
-  return new Set([...defaults, ...fromEnv]);
+  const defaults = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+  ].map(normalizeOrigin);
+
+  const origins = new Set([...defaults, ...fromEnv]);
+  console.log('✅ CORS: Allowed origins:', Array.from(origins));
+  return origins;
 }
 
 async function bootstrap() {
@@ -54,13 +67,17 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const allowedOrigins = buildAllowedOrigins();
-  const allowVercelPreview = (process.env.ALLOW_VERCEL_PREVIEW || 'false').toLowerCase() === 'true';
+  const allowVercelPreview = (process.env.ALLOW_VERCEL_PREVIEW || 'true').toLowerCase() === 'true';
 
   app.enableCors({
     credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type,Accept,Authorization,X-Requested-With',
     origin: (origin, callback) => {
       // Allow non-browser clients and same-origin server calls.
-      if (!origin) return callback(null, true);
+      if (!origin) {
+        return callback(null, true);
+      }
 
       const normalizedOrigin = normalizeOrigin(origin);
       if (allowedOrigins.has(normalizedOrigin)) {
@@ -71,7 +88,9 @@ async function bootstrap() {
         return callback(null, true);
       }
 
-      return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+      console.warn(`❌ CORS: Origin ${origin} is not allowed`);
+      // Return null, false instead of an error to prevent the server from crashing/returning 500
+      return callback(null, false);
     },
   });
 
