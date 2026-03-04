@@ -1,93 +1,164 @@
 # Slooze Food Ordering (Monorepo)
 
 Full-stack food ordering application built for the Slooze take-home assignment using:
-- `backend`: NestJS + GraphQL + Prisma + SQLite
-- `frontend`: Next.js + Apollo Client + Tailwind
+- `backend`: NestJS + GraphQL (code-first) + Prisma ORM + SQLite
+- `frontend`: Next.js 14 (App Router) + Apollo Client + Tailwind CSS + TypeScript
 
-This repository implements RBAC and bonus country-scoped Re-BAC exactly as requested in the assignment.
+This repository implements RBAC and the bonus country-scoped Re-BAC exactly as specified in the assignment.
 
-## Assignment Requirements
+---
+
+## Assignment Requirements Coverage
 
 ### Functional Access Table (RBAC)
 
 | # | Function | Admin | Manager | Member |
 |---|---|---|---|---|
-| 1 | View restaurants & menu items | Yes | Yes | Yes |
-| 2 | Create order (add food items) | Yes | Yes | Yes |
-| 3 | Place order (checkout & pay) | Yes | Yes | No |
-| 4 | Cancel order | Yes | Yes | No |
-| 5 | Update payment method | Yes | No | No |
+| 1 | View restaurants & menu items | ✅ | ✅ | ✅ |
+| 2 | Create order (add food items) | ✅ | ✅ | ✅ |
+| 3 | Place order (checkout & pay) | ✅ | ✅ | ❌ |
+| 4 | Cancel order | ✅ | ✅ | ❌ |
+| 5 | Update payment method | ✅ | ❌ | ❌ |
 
 ### Bonus Objective (Re-BAC)
 
-Country-scoped access is implemented:
-- `ADMIN`: global access
-- `MANAGER`: access limited to own country
-- `MEMBER`: access limited to own country
+Country-scoped access is implemented across all data layers:
 
-Managers and members from India cannot access America data and vice-versa.
+| Role | Data Scope |
+|---|---|
+| `ADMIN` | Global — sees all countries |
+| `MANAGER` | Own country only (India or America) |
+| `MEMBER` | Own country only (India or America) |
 
-## Objectives Coverage
+Managers and Members from India cannot access or act on any data associated with America, and vice-versa. This is enforced at the GraphQL resolver level — not just the UI.
 
-- Full-stack app implementation: Completed
-- RBAC implementation per access table: Completed
-- Bonus Re-BAC (country scoped): Completed
+---
 
-## Business Scenario Data
+## Business Scenario (Seeded Data)
 
-Users seeded as per problem statement:
-- Nick Fury (`ADMIN`, `AMERICA`)
-- Captain Marvel (`MANAGER`, `INDIA`)
-- Captain America (`MANAGER`, `AMERICA`)
-- Thanos (`MEMBER`, `INDIA`)
-- Thor (`MEMBER`, `INDIA`)
-- Travis (`MEMBER`, `AMERICA`)
+Users pre-seeded per the problem statement:
 
-Default password for all seeded users: `password123`
+| Name | Email | Role | Country |
+|---|---|---|---|
+| Nick Fury | nick@shield.com | ADMIN | America |
+| Captain Marvel | marvel@shield.com | MANAGER | India |
+| Captain America | america@shield.com | MANAGER | America |
+| Thanos | thanos@shield.com | MEMBER | India |
+| Thor | thor@shield.com | MEMBER | India |
+| Travis | travis@shield.com | MEMBER | America |
+
+**Default password for all users:** `password123`
+
+Restaurants, menu items, and payment methods are also pre-seeded (see `backend/prisma/seed.ts`).
+
+---
 
 ## Monorepo Structure
 
-```text
-food-ordering/
-├── ARCHITECTURE.md
-├── README.md
-├── backend/
-│   ├── prisma/
-│   │   ├── schema.prisma
-│   │   └── seed.ts
-│   └── src/
-│       ├── auth/
-│       ├── common/
-│       ├── users/
-│       ├── restaurants/
-│       ├── orders/
-│       ├── payments/
-│       ├── prisma/
-│       └── app.module.ts
-├── frontend/
-│   └── src/
-│       ├── app/
-│       ├── components/
-│       ├── graphql/
-│       └── lib/
-└── package.json
 ```
+food-ordering/
+├── README.md
+├── ARCHITECTURE.md
+├── postman_collection.json
+├── package.json                  ← root scripts (setup + dev)
+├── backend/
+│   ├── .env
+│   ├── nest-cli.json
+│   ├── tsconfig.json
+│   ├── package.json
+│   ├── prisma/
+│   │   ├── schema.prisma         ← DB schema (User, Restaurant, Order, Payment...)
+│   │   └── seed.ts               ← mock data seeder
+│   └── src/
+│       ├── main.ts
+│       ├── app.module.ts
+│       ├── schema.gql            ← auto-generated GraphQL schema
+│       ├── auth/                 ← JWT login + Passport strategy
+│       ├── common/               ← RolesGuard, enums, JWT guard, Re-BAC helper
+│       ├── users/                ← user queries (country-scoped)
+│       ├── restaurants/          ← restaurant + menu queries (country-scoped)
+│       ├── orders/               ← full order lifecycle with RBAC + Re-BAC
+│       ├── payments/             ← payment method management (Admin only)
+│       └── prisma/               ← PrismaService (global module)
+└── frontend/
+    ├── .env.local
+    ├── next.config.js
+    ├── tailwind.config.js
+    ├── tsconfig.json
+    ├── package.json
+    └── src/
+        ├── app/
+        │   ├── layout.tsx
+        │   ├── page.tsx                    ← redirect to /login or /dashboard
+        │   ├── login/page.tsx              ← login + quick demo buttons
+        │   └── dashboard/
+        │       ├── page.tsx                ← tab-based dashboard shell
+        │       ├── restaurants/page.tsx
+        │       ├── orders/page.tsx
+        │       ├── all-orders/page.tsx
+        │       ├── payments/page.tsx
+        │       └── team/page.tsx
+        ├── components/
+        │   ├── Navbar.tsx
+        │   ├── RestaurantsTab.tsx          ← browse + cart + checkout
+        │   ├── OrdersTab.tsx               ← view + place + cancel orders
+        │   ├── PaymentsTab.tsx             ← Admin-only payment management
+        │   └── TeamTab.tsx                 ← country-scoped team list
+        ├── graphql/
+        │   └── queries.ts                  ← all GQL queries and mutations
+        └── lib/
+            ├── apollo.tsx                  ← Apollo Client + auth link
+            └── auth.tsx                    ← auth context + RBAC helpers
+```
+
+---
 
 ## Architecture Summary
 
-1. Frontend (Next.js) calls GraphQL API with JWT bearer token.
-2. Backend (NestJS GraphQL) validates JWT and role/country guards.
-3. Prisma ORM accesses SQLite database.
-4. Seed script provides users, restaurants, menu items, and payment methods.
+```
+┌─────────────────────────────────────────────┐
+│         Frontend (Next.js 14 App Router)     │
+│  React · TypeScript · Tailwind · Apollo      │
+│  Port: 3000                                  │
+└──────────────────┬──────────────────────────┘
+                   │ GraphQL over HTTP (Bearer JWT)
+┌──────────────────▼──────────────────────────┐
+│         Backend (NestJS)                     │
+│  GraphQL Code-First · Passport JWT           │
+│  RolesGuard (RBAC) · checkCountryAccess      │
+│  Port: 4000                                  │
+└──────────────────┬──────────────────────────┘
+                   │ Prisma ORM
+┌──────────────────▼──────────────────────────┐
+│         SQLite Database                      │
+│  User · Restaurant · MenuItem                │
+│  Order · OrderItem · PaymentMethod · Payment │
+└─────────────────────────────────────────────┘
+```
+
+1. Frontend calls the GraphQL API with a JWT bearer token in every request.
+2. NestJS validates the JWT via Passport, then applies `JwtAuthGuard` and `RolesGuard`.
+3. Resolver-level `checkCountryAccess()` enforces Re-BAC country filtering.
+4. Prisma ORM handles all database access with full type safety.
+
+---
 
 ## Prerequisites
 
-- Node.js `>= 20.17` recommended
-- npm
+- **Node.js** `>= 20.17` recommended
+- **npm**
+
+Verify:
+```bash
+node -v
+npm -v
+```
+
+---
 
 ## Environment Variables
 
-### Backend (`backend/.env`)
+### Backend — `backend/.env`
 
 ```env
 DATABASE_URL="file:./dev.db"
@@ -96,17 +167,21 @@ PORT=4000
 FRONTEND_URL="http://localhost:3000"
 ```
 
-### Frontend (`frontend/.env.local`)
+### Frontend — `frontend/.env.local`
 
 ```env
 NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4000/graphql
 ```
 
+Both files are included in the repository for local development convenience.
+
+---
+
 ## Run Locally
 
 ### Option A: One-command setup (recommended)
 
-From repo root:
+From the repo root:
 
 ```bash
 npm install
@@ -114,18 +189,20 @@ npm run setup
 npm run dev
 ```
 
+This installs all dependencies, sets up the database, seeds mock data, and starts both servers concurrently.
+
 ### Option B: Run backend and frontend separately
 
-Backend:
+**Backend:**
 
 ```bash
 cd backend
 npm install
-npm run setup
-npm run start:dev
+npm run setup        # runs: prisma generate + migrate dev + seed
+npm run start:dev    # starts NestJS with hot reload
 ```
 
-Frontend:
+**Frontend:**
 
 ```bash
 cd frontend
@@ -133,13 +210,15 @@ npm install
 npm run dev
 ```
 
-URLs:
+**URLs:**
 - Frontend: `http://localhost:3000`
-- Backend GraphQL: `http://localhost:4000/graphql`
+- Backend GraphQL Playground: `http://localhost:4000/graphql`
 
-## GraphQL APIs (Core)
+---
 
-### Login
+## GraphQL API Reference
+
+### Authentication
 
 ```graphql
 mutation Login($email: String!, $password: String!) {
@@ -150,15 +229,12 @@ mutation Login($email: String!, $password: String!) {
 }
 ```
 
-### Restaurants and Menu
+### Restaurants & Menu (all roles — country-filtered for non-Admin)
 
 ```graphql
 query GetRestaurants {
   restaurants {
-    id
-    name
-    cuisine
-    country
+    id name cuisine country imageUrl
     menuItems { id name description price category }
   }
 }
@@ -167,17 +243,23 @@ query GetRestaurants {
 ### Orders
 
 ```graphql
+# All roles — Re-BAC enforced on restaurantId
 mutation CreateOrder($restaurantId: String!, $items: [OrderItemInput!]!) {
   createOrder(restaurantId: $restaurantId, items: $items) { id status total }
 }
 
+# Admin + Manager only
 mutation PlaceOrder($orderId: ID!, $paymentMethodId: String!) {
   placeOrder(orderId: $orderId, paymentMethodId: $paymentMethodId) { id status }
 }
 
+# Admin + Manager only
 mutation CancelOrder($orderId: ID!) {
   cancelOrder(orderId: $orderId) { id status }
 }
+
+query GetMyOrders { myOrders { id status total country createdAt items { quantity price } } }
+query GetAllOrders { orders { id status total country userId createdAt } }   # country-scoped
 ```
 
 ### Payment Methods (Admin only)
@@ -190,53 +272,56 @@ mutation AddPaymentMethod($input: CreatePaymentMethodInput!, $userId: String!) {
 mutation UpdatePaymentMethod($id: ID!, $input: CreatePaymentMethodInput!) {
   updatePaymentMethod(id: $id, input: $input) { id type last4 upiId isDefault }
 }
+
+mutation DeletePaymentMethod($id: ID!) {
+  deletePaymentMethod(id: $id) { id }
+}
 ```
+
+Full API collection available in `postman_collection.json`.
+
+---
 
 ## Dataset Used
 
-Mock dataset is seeded via:
-- `backend/prisma/seed.ts`
+Mock dataset seeded via `backend/prisma/seed.ts`:
 
-It includes:
-- Users with roles/countries
-- India and America restaurants
-- Menu items
-- Initial payment methods
+- **6 users** with assigned roles and countries
+- **4 restaurants** — 2 in India (Spicy Kitchen, Biryani House), 2 in America (The Burger Joint, Pizza Palace)
+- **20 menu items** across all restaurants (5 per restaurant, various categories)
+- **3 default payment methods** for Admin and Manager users
 
-## Design and Security Notes
+---
 
-- JWT-based authentication (`Authorization: Bearer <token>`)
-- Role-based access via guards/decorators
-- Country-level filtering and checks for Re-BAC
-- Backend validation on order creation, payment method usage, and payment method updates
+## Security Design
 
-## Submission Checklist (as requested in assignment note)
+- JWT tokens with 7-day expiration, signed with a configurable secret
+- Passwords hashed with `bcryptjs` (10 salt rounds)
+- All mutations and protected queries require a valid JWT (`JwtAuthGuard`)
+- Role enforcement via `@Roles()` decorator + `RolesGuard` at resolver level
+- Country enforcement via `checkCountryAccess()` utility — throws `ForbiddenException` for cross-country access
+- CORS restricted to the configured frontend origin
 
-- [x] Source code repository (this monorepo)
-- [x] README with local setup
-- [x] Architecture & Design document ([ARCHITECTURE.md](./ARCHITECTURE.md))
-- [x] Seed dataset (`prisma/seed.ts`)
-- [x] API definitions via GraphQL schema (`backend/src/schema.gql`)
-- [ ] Demo video or deployment link (to be added before final submission)
-- [ ] External API collection export file (optional)
+---
 
 ## Troubleshooting
 
-### Prisma init error: `@prisma/client did not initialize yet`
-
-Run:
-
+**`@prisma/client did not initialize yet`**
 ```bash
-cd backend
-npm run prisma:generate
-npm run setup
+cd backend && npx prisma generate && npm run setup
 ```
 
-### `DATABASE_URL` missing error
+**`DATABASE_URL` missing error**
+Ensure `backend/.env` exists with the values shown in the Environment Variables section.
 
-Ensure `backend/.env` exists (see environment section above).
+**Port 4000 already in use**
+```bash
+lsof -ti:4000 | xargs kill   # Mac/Linux
+# or change PORT=4001 in backend/.env
+```
 
-### Orders not appearing immediately
+**Orders not appearing after checkout**
+Apollo Client is configured to refetch queries after mutations. If stale data appears, log out and back in — this clears the cache.
 
-Logout/login once and refresh dashboard; queries are configured to refetch from network after mutations.
-
+**Prisma migration conflict**
+Delete `backend/prisma/dev.db` and re-run `npm run setup` in the backend directory.
