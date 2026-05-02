@@ -1,4 +1,4 @@
-# Slooze Food Ordering (Monorepo)
+# Tasty Food Ordering (Monorepo)
 
 Full-stack food ordering application built for the Slooze take-home assignment using:
 - `backend`: NestJS + GraphQL + Prisma + SQLite
