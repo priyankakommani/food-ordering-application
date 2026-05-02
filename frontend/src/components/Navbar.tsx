@@ -51,17 +51,16 @@ export default function Navbar({ activeTab, setActiveTab }: { activeTab: string;
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            <div className="text-xl font-bold text-orange-500">🍕 Slooze</div>
+            <div className="text-xl font-bold text-orange-500">🍕 Tasty Food </div>
             <div className="hidden md:flex gap-1">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === tab.id
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id
                       ? 'bg-orange-100 text-orange-700'
                       : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   {tab.label}
                 </button>

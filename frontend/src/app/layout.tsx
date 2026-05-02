@@ -3,7 +3,7 @@ import './globals.css';
 import { ApolloWrapper } from '@/lib/apollo';
 
 export const metadata: Metadata = {
-  title: 'Slooze Food Ordering',
+  title: 'Food Ordering',
   description: 'Role-based food ordering application',
 };
 

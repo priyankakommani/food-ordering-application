@@ -55,7 +55,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-500 to-orange-700 flex-col justify-center p-12">
         <div className="text-white">
           <div className="text-5xl mb-4">🍕</div>
-          <h1 className="text-4xl font-bold mb-4">Slooze Food</h1>
+          <h1 className="text-4xl font-bold mb-4">Tasty Food</h1>
           <p className="text-xl text-orange-100 mb-8">Role-based food ordering platform with country-scoped access control</p>
           <div className="space-y-3">
             {['RBAC - Admin, Manager, Member roles', 'Re-BAC - Country-scoped data access', 'GraphQL API with NestJS', 'Next.js 14 + TypeScript'].map((f) => (
